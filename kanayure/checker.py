@@ -99,7 +99,6 @@ class KanayureChecker:
                          exclude_files=self.exclude_files)
         for filepath in files:
             self.check_file(filepath)
-        self.set_same_counted_words()
         self.make_near_index()
         self.output_result("katakana_words.txt",
                            self.report_katakana_words)
@@ -177,14 +176,15 @@ class KanayureChecker:
             with RedirectStdoutTo(a_file):
                 function()
 
-    def set_same_counted_words(self):
-        same_counted_words = self.same_counted_words = {}
+    def make_same_counted_words(self):
+        same_counted_words = {}
         for word_number, counted in self.count.items():
             word = self.word.get_key(word_number)
             if counted in same_counted_words:
                 same_counted_words[counted].append(word)
             else:
                 same_counted_words[counted] = [word]
+        return same_counted_words
 
     def get_re_near_char(self, match):
         group_name = match.lastgroup
@@ -277,7 +277,7 @@ class KanayureChecker:
             return "、".join(near_string)
 
     def report_katakana_words(self):
-        same_counted_words = self.same_counted_words
+        same_counted_words = self.make_same_counted_words()
         for counted in sorted(same_counted_words.keys()):
             for word in sorted(same_counted_words[counted]):
                 word_number = self.word.get_number(word)
