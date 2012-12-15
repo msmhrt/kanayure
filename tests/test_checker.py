@@ -49,3 +49,28 @@ class TestKanayureChecker(unittest.TestCase):
             checker = KanayureChecker()
             near_index_base = checker.make_near_index_base(test_input)
             self.assertEqual(near_index_base, test_output)
+
+    @patch('kanayure.checker.KanayureChecker.run')
+    def test_find_near_words(self, mock_run):
+        from kanayure.checker import KanayureChecker
+        near_index_base = {"A": {"B"},
+                           "C": {"B"}}
+        testdata = (("A", {}, {}, set(), {"A", "B"}),
+                    ("A", {}, {}, {"B"}, {"A", "B"}),
+                    ("A", {}, {}, {"A", "B"}, {"A", "B"}),
+                    ("C", {}, {}, {"A", "B"}, {"A", "B", "C"}),
+                    ("A", {"B": "C"}, {"C": {"B", "C"}},
+                     {"B"}, {"A", "B", "C"}))
+        for num, (word,
+                  typical_word,
+                  near_index,
+                  near_words_in,
+                  near_words_out) in enumerate(testdata):
+            checker = KanayureChecker()
+            checker.near_index_base = near_index_base
+            checker.near_index = near_index
+            checker.typical_word = typical_word
+            result = checker.find_near_words(word, near_words_in)
+            self.assertSetEqual(result,
+                                near_words_out,
+                                "testdata = " + repr(testdata[num]))

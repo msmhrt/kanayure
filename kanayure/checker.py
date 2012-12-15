@@ -219,29 +219,22 @@ class KanayureChecker:
                     near_index_base[word] = {near_word}
         return near_index_base
 
-    def get_near_words(self, word):
-        near_words = set()
-        if word in self.typical_word:
-            return near_words
-        # Don't set word to self.typical_word[word] yet
-        self.typical_word[word] = None
-        if word not in self.near_index_base:
-            return {word}
-        for near_word in self.near_index_base[word]:
-            near_words.add(near_word)
-            near_words |= self.get_near_words(near_word)
-        return near_words
-
     def find_near_words(self, word, near_words):
         if word in near_words:
             return near_words
         near_words.add(word)
         if word not in self.near_index_base:
             return near_words
+        typical_word = None
         for near_word in self.near_index_base[word]:
-            if word in self.near_index:
-                near_words |= self.near_index(word)
-            near_words |= self.get_near_words(near_word)
+            if near_word in self.typical_word:
+                if typical_word is None:
+                    typical_word = self.typical_word[near_word]
+                near_words |= self.near_index[self.typical_word[near_word]]
+            else:
+                if near_word in near_words:
+                    continue
+                near_words = self.find_near_words(near_word, near_words)
         return near_words
 
     def make_near_index(self):
@@ -256,13 +249,10 @@ class KanayureChecker:
                     typical_word = self.typical_word[near_word]
                     break
             if typical_word is None:
-                for near_word in near_words:
-                    self.typical_word[near_word] = word
-                self.near_index[word] = near_words
-            else:
-                near_words -= self.near_index[typical_word]
-                for near_word in near_words:
-                    self.typical_word[near_word] = typical_word
+                typical_word = word
+            for near_word in near_words:
+                self.typical_word[near_word] = typical_word
+            self.near_index[typical_word] = near_words
 
     def make_near_words_string(self, word, ignore_self=True):
             typical_word = self.typical_word[word]
