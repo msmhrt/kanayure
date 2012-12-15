@@ -11,7 +11,6 @@ INCLUDE_DIRS = set()
 EXCLUDE_DIRS = {'__pycache__', 'CVS', '.bzr', '.git', '.hg', '.svn'}
 INCLUDE_FILES = set()
 EXCLUDE_FILES = set()
-FILTER_FUNCTION = lambda filepath: print(filepath)
 
 
 class FileList:
