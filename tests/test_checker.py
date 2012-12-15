@@ -26,7 +26,9 @@ class TestKanayureChecker(unittest.TestCase):
                     ("ウィンドゥ", ["ウィンドウ", "ウィンドー"], []),
                     ("ウィンドウ", ["ウィンドゥ", "ウィンドー"], []),
                     ("ウィンドー", ["ウィンドゥ", "ウィンドウ"], []),
-                    ("デストラクタ", ["ディストラクタ"], []))
+                    ("デストラクタ", ["ディストラクタ"], []),
+                    ("バック・ステップ", ["バックステップ"], []),
+                    ("バックステップ", ["バック・ステップ"], []))
         for test_input, match_tests, no_match_tests in testdata:
             checker = KanayureChecker()
             re_near_word = checker.make_re_near_word(test_input)
