@@ -20,15 +20,9 @@ class TestKanayureChecker(unittest.TestCase):
         from kanayure.checker import KanayureChecker
         testdata = (("アー", ["ア"], ["イ"]),
                     ("ア・イ", ["アイ", "アーイ"], ["ア・ン", "ア・"]),
-                    ("イアー", ["イヤー"], []),
-                    ("ヴァヴィヴヴェヴォ", ["バビブベボ"], []),
-                    ("ディストラクタ", ["デストラクタ"], []),
-                    ("ウィンドゥ", ["ウィンドウ", "ウィンドー"], []),
-                    ("ウィンドウ", ["ウィンドゥ", "ウィンドー"], []),
-                    ("ウィンドー", ["ウィンドゥ", "ウィンドウ"], []),
-                    ("デストラクタ", ["ディストラクタ"], []),
                     ("バック・ステップ", ["バックステップ"], []),
-                    ("バックステップ", ["バック・ステップ"], []))
+                    ("バックステップ", ["バック・ステップ"], []),
+                    ("チップ", [], ["テープ"]))
         for test_input, match_tests, no_match_tests in testdata:
             checker = KanayureChecker()
             re_near_word = checker.make_re_near_word(test_input)
@@ -37,6 +31,37 @@ class TestKanayureChecker(unittest.TestCase):
                 self.assertRegex("#" + match_test + "#", re_near_word)
             for no_match_test in no_match_tests:
                 self.assertNotRegex("#" + no_match_test + "#", re_near_word)
+
+        testdata = (("ディストラクタ", "デストラクタ"),
+                    ("ヴァヴィヴヴェヴォ", "バビブベボ"),
+                    ("イアー", "イヤー"),
+                    ("ファフィフフェフォ", "ハヒフヘホ"),
+                    ("エックストラ", "エキストラ", "エクストラ"),
+                    ("リファレンス", "レファレンス"),
+                    ("ロケール", "ロカール"),
+                    ("パーザ", "パーサー"),
+                    ("イヤー", "イア"),
+                    ("クォート", "クオート"),
+                    ("ウインドウ",
+                     "ウィンドウ",
+                     "ウィンドゥ",
+                     "ウィンドー",
+                     "ウインドー"),
+                    ("インターフェース", "インタフェイス"),
+                    ("チェーン", "チェイン"),
+                    ("メーラ", "メイラー"),
+                    ("ヘッダブロック", "ヘッダーブロック"),
+                    ("ティップ", "チップ"))
+        for variants in testdata:
+            re_variant = None
+            for variant in variants:
+                if re_variant is None:
+                    re_variant = checker.make_re_near_word(variant)
+                else:
+                    self.assertEqual(checker.make_re_near_word(variant),
+                                     re_variant,
+                                     variant)
+                self.assertRegex("#" + test_input + "#", re_near_word, variant)
 
     @patch('kanayure.checker.KanayureChecker.run')
     def test_make_near_index_base(self, mock_run):
