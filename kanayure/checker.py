@@ -4,6 +4,7 @@
 # Copyright (c) 2012 Masami HIRATA <msmhrt@gmail.com>
 
 import os
+import time
 
 import regex
 
@@ -92,6 +93,7 @@ class KanayureChecker:
         self.run()
 
     def run(self):
+        start_time = time.time()
         files = FileList(root_dir=self.root_dir,
                          include_dirs=self.include_dirs,
                          exclude_dirs=self.exclude_dirs,
@@ -105,6 +107,8 @@ class KanayureChecker:
         self.output_result("katakana_variants.txt",
                            self.report_katakana_variants)
         print("{} files are checked".format(self.num_files))
+        end_time = time.time()
+        print("Elapsed time: {0:.3f} seconds".format(end_time - start_time))
 
     def make_re_katakana(self, boundary):
         return regex.compile(RE_KATAKANA_BASE.format(boundary=boundary))
