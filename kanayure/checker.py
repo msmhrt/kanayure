@@ -209,19 +209,29 @@ class KanayureChecker:
 
     def get_re_near_char(self, match):
         group_name = match.lastgroup
-        return self.re_near_char_dict[group_name].format(**match.groupdict())
+        group_dict = match.groupdict
+        if group_name in self.re_near_char_flag:
+            return self.re_near_char_dict[group_name].format(**group_dict())
+        else:
+            return self.re_near_char_dict[group_name]
 
     def make_re_near_word(self, word):
         if self.re_near_char is None or self.re_near_char_dict is None:
             re_near_char_list = []
             re_near_char_dict = {}
+            re_near_char_flag = set()
             for key, (re_from_char, re_to_char) in enumerate(RE_CHAR_TABLE):
                 re_near_char_list.append(r"(?<g{}>{})".format(key,
                                                               re_from_char))
                 re_near_char_dict["g" + str(key)] = re_to_char
+                try:
+                    re_to_char.format()
+                except KeyError:
+                    re_near_char_flag.add("g" + str(key))
             re_near_char = r"(?:" + r"|".join(re_near_char_list) + r")"
             self.re_near_char = regex.compile(re_near_char)
             self.re_near_char_dict = re_near_char_dict
+            self.re_near_char_flag = re_near_char_flag
         re_near_word = self.re_near_char.sub(self.get_re_near_char, word)
         return r"#(" + re_near_word + r")(?=#)"
 
