@@ -8,4 +8,4 @@ if __name__ == '__main__':  # pragma: nocover
 
     KanayureChecker(root_dir=r"..\py33",
                     include_files={"*.po"},
-                    boundary=r"\"\s*\n\s*\"")
+                    boundary=r"\"\s*\"")
