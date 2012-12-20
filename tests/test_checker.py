@@ -51,7 +51,8 @@ class TestKanayureChecker(unittest.TestCase):
                     ("チェーン", "チェイン"),
                     ("メーラ", "メイラー"),
                     ("ヘッダブロック", "ヘッダーブロック"),
-                    ("ティップ", "チップ"))
+                    ("ティップ", "チップ"),
+                    ("ピア・トゥ・ピア", "ピアツーピア"))
         for variants in testdata:
             re_variant = None
             for variant in variants:
