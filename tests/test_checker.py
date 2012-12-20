@@ -56,7 +56,8 @@ class TestKanayureChecker(unittest.TestCase):
                     ("シグニチャ",
                      "シグネチャ",
                      "シグネイチャ",
-                     "シグネーチャ"))
+                     "シグネーチャ"),
+                    ("コンフィギュレーション", "コンフィグレーション"))
         for variants in testdata:
             re_variant = None
             for variant in variants:
