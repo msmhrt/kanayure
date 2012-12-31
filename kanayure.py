@@ -6,7 +6,4 @@
 if __name__ == '__main__':  # pragma: nocover
     from kanayure.command import KanayureCommand
 
-    command = KanayureCommand(root_dir=r"..\py33",
-                              include_files={"*.po"},
-                              boundary=r"\"\s*\"")
-    command.run()
+    KanayureCommand().run()
