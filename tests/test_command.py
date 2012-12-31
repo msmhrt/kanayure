@@ -3,6 +3,8 @@
 
 import unittest
 
+from mock import patch
+
 
 class TestKanayureCommand(unittest.TestCase):
     def setUp(self):
@@ -13,3 +15,19 @@ class TestKanayureCommand(unittest.TestCase):
 
     def test_kanayurecommand(self):
         pass
+
+    @patch('kanayure.command.KanayureChecker')
+    def test_run(self, checker_mock):
+        from kanayure.command import KanayureCommand
+
+        checker_mock.return_value.run.return_value = 0
+        with self.assertRaises(SystemExit) as assertion:
+            command = KanayureCommand()
+            command.run()
+        self.assertEqual(assertion.exception.code, 0)
+
+        checker_mock.return_value.run.return_value = -1
+        with self.assertRaises(SystemExit) as assertion:
+            command = KanayureCommand()
+            command.run()
+        self.assertEqual(assertion.exception.code, -1)
