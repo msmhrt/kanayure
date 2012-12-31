@@ -89,6 +89,7 @@ class KanayureChecker:
                  include_files=None,
                  exclude_files=None,
                  boundary=None):
+        self.status_code = 0
         self.root_dir = root_dir
         self.include_dirs = include_dirs
         self.exclude_dirs = exclude_dirs
@@ -107,7 +108,6 @@ class KanayureChecker:
             boundary = r"\s*\n\s*"
         self.re_katakana = self.make_re_katakana(boundary=boundary)
         self.re_boundary = self.make_re_boundary(boundary=boundary)
-        self.run()
 
     def run(self):
         start_time = time.time()
@@ -126,6 +126,8 @@ class KanayureChecker:
         print("{} files are checked".format(self.num_files))
         end_time = time.time()
         print("Elapsed time: {0:.3f} seconds".format(end_time - start_time))
+
+        return self.status_code
 
     def make_re_katakana(self, boundary):
         return regex.compile(RE_KATAKANA_BASE.format(boundary=boundary))

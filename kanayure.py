@@ -4,8 +4,12 @@
 # Copyright (c) 2012 Masami HIRATA <msmhrt@gmail.com>
 
 if __name__ == '__main__':  # pragma: nocover
+    import sys
+
     from kanayure.checker import KanayureChecker
 
-    KanayureChecker(root_dir=r"..\py33",
-                    include_files={"*.po"},
-                    boundary=r"\"\s*\"")
+    checker = KanayureChecker(root_dir=r"..\py33",
+                              include_files={"*.po"},
+                              boundary=r"\"\s*\"")
+    status_code = checker.run()
+    sys.exit(status_code)
