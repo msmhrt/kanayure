@@ -235,21 +235,38 @@ class KanayureChecker:
             self.re_near_char_dict = re_near_char_dict
             self.re_near_char_flag = re_near_char_flag
         re_near_word = self.re_near_char.sub(self.get_re_near_char, word)
-        return r"#(" + re_near_word + r")(?=#)"
+        return re_near_word
 
     def make_near_index_base(self, word_list):
         near_index_base = {}
         all_words = '#' + "#".join(word_list) + '#'
+        all_words_dict = {}
         for word in word_list:
-            for match in regex.finditer(self.make_re_near_word(word),
-                                        all_words):
-                near_word = match.group(1)
-                if near_word == word:
-                    continue
-                if word in near_index_base:
-                    near_index_base[word].add(near_word)
-                else:
-                    near_index_base[word] = {near_word}
+            key = word[0]
+            if key in all_words_dict:
+                all_words_dict[word[0]].append(word)
+            else:
+                all_words_dict[word[0]] = [word]
+        for word in word_list:
+            re_near_word = self.make_re_near_word(word)
+            if re_near_word[0] not in '([' and re_near_word[1] not in '?':
+                regex_near_word = regex.compile(r"\A" + re_near_word + r"\Z")
+                variant_words = [a_word for a_word in
+                                 all_words_dict[re_near_word[0]]
+                                 if word != a_word and
+                                 regex_near_word.match(a_word) is not None]
+                if variant_words != []:
+                    near_index_base[word] = set(variant_words)
+            else:
+                for match in regex.finditer(r"#(" + re_near_word + r")(?=#)",
+                                            all_words):
+                    near_word = match.group(1)
+                    if near_word == word:
+                        continue
+                    if word in near_index_base:
+                        near_index_base[word].add(near_word)
+                    else:
+                        near_index_base[word] = {near_word}
         return near_index_base
 
     def find_near_words(self, word, near_words):

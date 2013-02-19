@@ -26,11 +26,12 @@ class TestKanayureChecker(unittest.TestCase):
         for test_input, match_tests, no_match_tests in testdata:
             checker = KanayureChecker()
             re_near_word = checker.make_re_near_word(test_input)
-            self.assertRegex("#" + test_input + "#", re_near_word)
+            self.assertRegex(test_input, r"\A" + re_near_word + r"\Z")
             for match_test in match_tests:
-                self.assertRegex("#" + match_test + "#", re_near_word)
+                self.assertRegex(match_test, r"\A" + re_near_word + r"\Z")
             for no_match_test in no_match_tests:
-                self.assertNotRegex("#" + no_match_test + "#", re_near_word)
+                self.assertNotRegex(no_match_test,
+                                    r"\A" + re_near_word + r"\Z")
 
         testdata = (("ディストラクタ", "デストラクタ"),
                     ("ヴァヴィヴヴェヴォ", "バビブベボ"),
@@ -68,7 +69,9 @@ class TestKanayureChecker(unittest.TestCase):
                     self.assertEqual(checker.make_re_near_word(variant),
                                      re_variant,
                                      variant)
-                self.assertRegex("#" + test_input + "#", re_near_word, variant)
+                self.assertRegex(test_input,
+                                 r"\A" + re_near_word + r"\Z",
+                                 variant)
 
     @patch('kanayure.checker.KanayureChecker.run')
     def test_make_near_index_base(self, mock_run):
