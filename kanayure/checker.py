@@ -3,6 +3,7 @@
 
 # Copyright (c) 2012 Masami HIRATA <msmhrt@gmail.com>
 
+from collections import defaultdict
 import os
 import time
 
@@ -177,12 +178,9 @@ class KanayureChecker:
                 function()
 
     def make_same_counted_words(self):
-        same_counted_words = {}
+        same_counted_words = defaultdict(list)
         for word, counted in self.count.items():
-            if counted in same_counted_words:
-                same_counted_words[counted].append(word)
-            else:
-                same_counted_words[counted] = [word]
+            same_counted_words[counted].append(word)
         return same_counted_words
 
     def get_re_near_char(self, match):
@@ -214,15 +212,11 @@ class KanayureChecker:
         return re_near_word
 
     def make_near_index_base(self, word_list):
-        near_index_base = {}
+        near_index_base = defaultdict(set)
         all_words = '#' + "#".join(word_list) + '#'
-        all_words_dict = {}
+        all_words_dict = defaultdict(list)
         for word in word_list:
-            key = word[0]
-            if key in all_words_dict:
-                all_words_dict[word[0]].append(word)
-            else:
-                all_words_dict[word[0]] = [word]
+            all_words_dict[word[0]].append(word)
         for word in word_list:
             re_near_word = self.make_re_near_word(word)
             if re_near_word[0] not in '([' and re_near_word[1] not in '?':
@@ -239,10 +233,7 @@ class KanayureChecker:
                     near_word = match.group(1)
                     if near_word == word:
                         continue
-                    if word in near_index_base:
-                        near_index_base[word].add(near_word)
-                    else:
-                        near_index_base[word] = {near_word}
+                    near_index_base[word].add(near_word)
         return near_index_base
 
     def find_near_words(self, word, near_words):
