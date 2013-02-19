@@ -8,7 +8,7 @@ import time
 
 import regex
 
-from kanayure.util import RedirectStdoutTo, KeyIndex
+from kanayure.util import RedirectStdoutTo
 from kanayure.filelist import FileList
 
 RE_CLASS_KATAKANA_WITHOUT_DOT = (r"\u3099-\u309C" +
@@ -95,9 +95,6 @@ class KanayureChecker:
         self.exclude_dirs = exclude_dirs
         self.include_files = include_files
         self.exclude_files = exclude_files
-        self.word = KeyIndex()
-        self.raw_word = KeyIndex()
-        self.index = {}
         self.count = {}
         self.summary = {}
         self.reference = {}
@@ -135,19 +132,7 @@ class KanayureChecker:
     def make_re_boundary(self, boundary):
         return regex.compile(RE_BOUNDARY_BASE.format(boundary=boundary))
 
-    def add_index(self, word_number, raw_word_number):
-        if word_number in self.index:
-            self.index[word_number].add(raw_word_number)
-        else:
-            self.index[word_number] = {raw_word_number}
-
-    def word_count_up(self, word_number):
-        if word_number in self.count:
-            self.count[word_number] += 1
-        else:
-            self.count[word_number] = 1
-
-    def add_summary(self, word_number, word_range, lines, border=False):
+    def add_summary(self, word, word_range, lines, border=False):
         start = word_range[0]
         end = word_range[1]
         for x in range(2):
@@ -160,11 +145,7 @@ class KanayureChecker:
             if new_end == -1:
                 new_end = len(lines)
             end = min(new_end, len(lines))
-        self.summary[word_number] = lines[start:end + 1]
-
-    def add_reference(self, word_number, filepath):
-        relative_path = os.path.relpath(filepath, self.root_dir)
-        self.reference[word_number] = relative_path
+        self.summary[word] = lines[start:end + 1]
 
     def check_file(self, filepath):
         with open(filepath, encoding='utf-8') as file:
@@ -174,25 +155,21 @@ class KanayureChecker:
                 border = False
                 if match.group(1) is None:
                     word = match.group(0)
-                    word_number = self.word.add(word)
                 else:
                     border = True
                     raw_word = match.group(0)
                     word = self.re_boundary.sub("", raw_word)
-
-                    word_number = self.word.add(word)
-                    raw_word_number = self.raw_word.add(raw_word)
-                    self.add_index(word_number, raw_word_number)
-
-                word_range = match.span(0)
-                if word_number not in self.reference:
-                    self.add_reference(word_number, filepath)
-                if word_number not in self.summary:
-                    self.add_summary(word_number,
+                if word in self.count:
+                    self.count[word] += 1
+                else:
+                    self.count[word] = 1
+                    relative_path = os.path.relpath(filepath, self.root_dir)
+                    self.reference[word] = relative_path
+                    word_range = match.span(0)
+                    self.add_summary(word,
                                      word_range,
                                      lines,
                                      border=border)
-                self.word_count_up(word_number)
 
     def output_result(self, filename, function):
         with open(filename, mode='w', encoding='utf-8') as a_file:
@@ -201,8 +178,7 @@ class KanayureChecker:
 
     def make_same_counted_words(self):
         same_counted_words = {}
-        for word_number, counted in self.count.items():
-            word = self.word.get_key(word_number)
+        for word, counted in self.count.items():
             if counted in same_counted_words:
                 same_counted_words[counted].append(word)
             else:
@@ -288,7 +264,7 @@ class KanayureChecker:
         return near_words
 
     def make_near_index(self):
-        self.near_index_base = self.make_near_index_base(self.word.table)
+        self.near_index_base = self.make_near_index_base(self.count.keys())
         self.near_index = {}
         self.typical_word = {}
         for word in self.near_index_base:
@@ -309,7 +285,7 @@ class KanayureChecker:
             near_words = self.near_index[typical_word].copy()
             if ignore_self:
                 near_words.discard(word)
-            with_count = [(self.count[self.word.get_number(a_word)],
+            with_count = [(self.count[a_word],
                            a_word) for a_word in near_words]
             with_count.sort(reverse=True)
             near_string = ["{}({})".format(
@@ -320,7 +296,6 @@ class KanayureChecker:
         same_counted_words = self.make_same_counted_words()
         for counted in sorted(same_counted_words.keys()):
             for word in sorted(same_counted_words[counted]):
-                word_number = self.word.get_number(word)
                 typical_word = self.typical_word.get(word, None)
                 if typical_word in self.near_index:
                     near_string = self.make_near_words_string(word)
@@ -328,8 +303,8 @@ class KanayureChecker:
                         word, counted, near_string))
                 else:
                     print("### {}({}):".format(word, counted))
-                print("File:", self.reference[word_number])
-                print(self.summary[word_number])
+                print("File:", self.reference[word])
+                print(self.summary[word])
 
     def report_katakana_variants(self):
         near_words_list = []
